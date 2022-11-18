@@ -10,7 +10,7 @@ import * as server from "../../utils/serve-dummy-app";
 // Comment out to disable recorder
 // process.env.PWDEBUG = "1";
 
-test.use({ userdata: "1AccountBTC1AccountETH" });
+test.use({ userdata: "1AccountBTC1AccountETH"});
 
 let continueTest = false;
 
@@ -39,7 +39,7 @@ test.afterAll(() => {
 });
 
 // Due to flakiness on different OS's and CI, we won't run the screenshots where unncessary for testing
-test.skip("Discover", async ({ page }) => {
+test("Discover", async ({ page }) => {
   // Don't run test if server is not running
   if (!continueTest) return;
 
@@ -49,20 +49,11 @@ test.skip("Discover", async ({ page }) => {
   const layout = new Layout(page);
   const deviceAction = new DeviceAction(page);
 
-  await test.step("Navigate to catalog", async () => {
+  await test.step("Navigate to dummy live app", async () => {
     await layout.goToDiscover();
-    await expect.soft(page).toHaveScreenshot("catalog.png");
-  });
-
-  await test.step("Open Test App", async () => {
     await discoverPage.openTestApp();
-    await expect.soft(drawer.content).toContainText("External Application");
-  });
-
-  await test.step("Accept Live App Disclaimer", async () => {
     await drawer.continue();
     await drawer.waitForDrawerToDisappear(); // macos runner was having screenshot issues here because the drawer wasn't disappearing fast enough
-    await layout.waitForLoadingSpinnerToHaveDisappeared();
     await expect.soft(page).toHaveScreenshot("live-disclaimer-accepted.png");
   });
 
@@ -72,13 +63,14 @@ test.skip("Discover", async ({ page }) => {
   });
 
   await test.step("Request Account drawer - open", async () => {
-    await discoverPage.requestAccount();
-    await expect.soft(page).toHaveScreenshot("live-app-request-account-drawer.png");
+    await discoverPage.requestAsset();
+    await expect(await discoverPage.selectAssetTitle.isVisible()).toBe(true);
   });
 
   await test.step("Request Account - select asset", async () => {
     await discoverPage.selectAsset();
-    await expect.soft(page).toHaveScreenshot("live-app-request-account-select-account.png");
+    await expect(await discoverPage.selectAccountTitle.isVisible()).toBe(true);
+    await expect(await discoverPage.selectAssetSearchBar.isEnabled()).toBe(true);
   });
 
   await test.step("Request Account - select BTC", async () => {
