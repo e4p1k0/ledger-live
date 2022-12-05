@@ -134,7 +134,7 @@ function DelegationAmount({ navigation, route }: Props) {
   const error = useMemo(
     () =>
       max.lt(0) ||
-      value.lt(min) ||
+      value.lte(min) ||
       (route.params.transaction.mode === "redelegate" && value.eq(0)),
     [value, max, min, route.params.transaction],
   );
