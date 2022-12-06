@@ -1,4 +1,5 @@
 import { Page, Locator } from "@playwright/test";
+import { waitFor } from "tests/utils/waitFor";
 
 export class DiscoverPage {
   readonly page: Page;
@@ -7,6 +8,7 @@ export class DiscoverPage {
   readonly testAppCatalogItem: Locator;
   readonly disclaimerTitle: Locator;
   readonly disclaimerText: Locator;
+  readonly liveAppLoadingSpinner: Locator;
   readonly getAllAccountsButton: Locator;
   readonly requestAccountButton: Locator;
   readonly selectAssetTitle: Locator;
@@ -25,6 +27,7 @@ export class DiscoverPage {
     this.testAppCatalogItem = page.locator("#platform-catalog-app-dummy-live-app");
     this.disclaimerTitle = page.locator("data-test-id=live-app-disclaimer-drawer-title");
     this.disclaimerText = page.locator("text=External Application");
+    this.liveAppLoadingSpinner = page.locator("data-test-id=live-app-loading-spinner");
     this.getAllAccountsButton = page.locator("data-test-id=get-all-accounts-button"); // TODO: make this into its own model
     this.requestAccountButton = page.locator("data-test-id=request-single-account-button");
     this.selectAssetTitle = page.locator("data-test-id=select-asset-drawer-title");
@@ -42,6 +45,10 @@ export class DiscoverPage {
   async openTestApp() {
     await this.testAppCatalogItem.click();
     await this.disclaimerTitle.waitFor({ state: "visible" });
+  }
+
+  async waitForLiveAppToLoad() {
+    await this.liveAppLoadingSpinner.waitFor({ state: "detached" });
   }
 
   async getAccountsList() {
@@ -95,6 +102,28 @@ export class DiscoverPage {
     `,
       );
     }, elementName);
+  }
+
+  async waitForCorrectTextInWebview(textToCheck: string) {
+    return waitFor(() => this.textIsPresent(textToCheck));
+  }
+
+  async textIsPresent(textToCheck: string) {
+    const result: boolean = await this.page.evaluate(textToCheck => {
+      const webview = document.querySelector("webview");
+      return (webview as any)
+        .executeJavaScript(
+          `(function() {
+        return document.querySelector('pre').innerHTML;
+      })();
+    `,
+        )
+        .then((text: string) => {
+          return text.includes(textToCheck);
+        });
+    }, textToCheck);
+
+    return result;
   }
 
   delay(timeout: number) {

@@ -10,7 +10,7 @@ import * as server from "../../utils/serve-dummy-app";
 // Comment out to disable recorder
 // process.env.PWDEBUG = "1";
 
-test.use({ userdata: "1AccountBTC1AccountETH"});
+test.use({ userdata: "1AccountBTC1AccountETH" });
 
 let continueTest = false;
 
@@ -54,11 +54,14 @@ test("Discover", async ({ page }) => {
     await discoverPage.openTestApp();
     await drawer.continue();
     await drawer.waitForDrawerToDisappear(); // macos runner was having screenshot issues here because the drawer wasn't disappearing fast enough
+    await discoverPage.waitForLiveAppToLoad(); // let the loading spinner disappear first
     await expect.soft(page).toHaveScreenshot("live-disclaimer-accepted.png");
   });
 
   await test.step("List all accounts", async () => {
     await discoverPage.getAccountsList();
+    await discoverPage.waitForCorrectTextInWebview("mock:1:bitcoin:true_bitcoin_0:");
+    await discoverPage.waitForCorrectTextInWebview("mock:1:bitcoin:true_bitcoin_1:");
     await expect.soft(page).toHaveScreenshot("live-app-list-all-accounts.png");
   });
 
@@ -75,11 +78,14 @@ test("Discover", async ({ page }) => {
 
   await test.step("Request Account - select BTC", async () => {
     await discoverPage.selectAccount();
+    await drawer.waitForDrawerToDisappear();
+    await discoverPage.waitForCorrectTextInWebview("mock:1:bitcoin:true_bitcoin_0:");
     await expect.soft(page).toHaveScreenshot("live-app-request-account-output.png");
   });
 
   await test.step("List currencies", async () => {
     await discoverPage.listCurrencies();
+    await discoverPage.waitForCorrectTextInWebview("CryptoCurrency");
     await expect.soft(page).toHaveScreenshot("live-app-list-currencies.png");
   });
 
@@ -91,6 +97,7 @@ test("Discover", async ({ page }) => {
 
   await test.step("Verify Address - address output", async () => {
     await modal.waitForModalToDisappear();
+    await discoverPage.waitForCorrectTextInWebview("1xey");
     await expect.soft(page).toHaveScreenshot("live-app-verify-address-output.png");
   });
 
@@ -110,6 +117,7 @@ test("Discover", async ({ page }) => {
 
   await test.step("Sign Transaction - signature output", async () => {
     await modal.waitForModalToDisappear();
+    await discoverPage.waitForCorrectTextInWebview("mock_op_100");
     await expect.soft(page).toHaveScreenshot("live-app-sign-transaction-output.png");
   });
 });
