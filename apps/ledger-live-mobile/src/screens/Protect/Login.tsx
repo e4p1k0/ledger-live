@@ -10,7 +10,7 @@ import { login } from "@ledgerhq/live-common/platform/providers/ProtectProvider/
 
 import TabBarSafeAreaView from "../../components/TabBar/TabBarSafeAreaView";
 import Button from "../../components/wrappedUi/Button";
-import { ScreenName } from "../../const/navigation";
+import { ScreenName } from "../../const";
 import { updateProtectData, updateProtectStatus } from "../../actions/protect";
 import { formatData, getProtectStatus } from "../../logic/protect";
 
