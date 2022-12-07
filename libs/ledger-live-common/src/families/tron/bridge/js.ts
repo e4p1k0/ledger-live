@@ -59,7 +59,6 @@ import {
   TronInvalidFreezeAmount,
   TronRewardNotAvailable,
   TronNoReward,
-  TronSendTrc20ToNewAccountForbidden,
   TronUnexpectedFees,
   TronNotEnoughTronPower,
   TronNotEnoughEnergy,
@@ -120,19 +119,6 @@ const signOperation = ({
         transaction.amount = transaction.useAllAmount
           ? balance
           : transaction.amount;
-
-        // send trc20 to a new account is forbidden by us (because it will not activate the account)
-        if (
-          transaction.recipient &&
-          transaction.mode === "send" &&
-          subAccount &&
-          subAccount.type === "TokenAccount" &&
-          subAccount.token.tokenType === "trc20" &&
-          !isContractAddressRecipient && // send trc20 to a smart contract is allowed
-          (await fetchTronAccount(transaction.recipient)).length === 0
-        ) {
-          throw new TronSendTrc20ToNewAccountForbidden();
-        }
 
         const getPreparedTransaction = () => {
           switch (transaction.mode) {
@@ -637,16 +623,6 @@ const getTransactionStatus = async (
       errors.recipient = new InvalidAddress(undefined, {
         currencyName: a.currency.name,
       });
-    } else if (
-      recipient &&
-      mode === "send" &&
-      account.type === "TokenAccount" &&
-      account.token.tokenType === "trc20" &&
-      !isContractAddressRecipient && // send trc20 to a smart contract is allowed
-      (await fetchTronAccount(recipient)).length === 0
-    ) {
-      // send trc20 to a new account is forbidden by us (because it will not activate the account)
-      errors.recipient = new TronSendTrc20ToNewAccountForbidden();
     }
   }
 
